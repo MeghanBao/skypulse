@@ -46,69 +46,86 @@ SkyPulse consists of two main components:
 ---
 
 ## � System Workflow
-
-```mermaid
 graph TB
   %% =========================
-  %% User Interface
+  %% User Layer
   %% =========================
-  subgraph UI["User Interface"]
-    A[User] -->|Natural language\nParis under USD 500| B[Frontend\nNext.js]
+  subgraph UL["User Layer"]
+    U[User]
   end
 
   %% =========================
-  %% Frontend Processing
+  %% Web Application
   %% =========================
-  subgraph FP["Frontend Processing"]
-    B -->|Parse with OpenAI| C[Subscription created]
-    C -->|Store| D[(SQLite database)]
+  subgraph WEB["Web Application"]
+    FE[Frontend\nNext.js]
+    API[Backend API\nSubscription Service]
   end
 
   %% =========================
-  %% Email Service
+  %% Data Layer
   %% =========================
-  subgraph ES["Email Service\nScheduled every 30 min"]
-    E[APScheduler] -->|Trigger| F[Email reader\nIMAP]
-    F -->|Fetch| G[Flight-deal emails]
-    G -->|Parse HTML| H[Deal parser\nLLM + BeautifulSoup]
-    H -->|Extract| I[Deal data]
-    I -->|Save| D
+  subgraph DATA["Data Layer"]
+    DB[(SQLite Database)]
+  end
+
+  %% =========================
+  %% Background Jobs
+  %% =========================
+  subgraph JOBS["Background Jobs\nEvery 30 minutes"]
+    SCHED[APScheduler]
+    IMAP[Email Reader\nIMAP]
+    PARSER[Deal Parser\nLLM + BeautifulSoup]
   end
 
   %% =========================
   %% Matching Engine
   %% =========================
-  subgraph ME["Matching Engine"]
-    D -->|Active subscriptions| J[Deal matcher]
-    I -->|New deal| J
-    J -->|Calculate score\nDestination 40\nPrice 30\nDate 20\nOrigin 10| K{Score >= 50?}
-    K -->|Yes| L[Generate AI summary]
-    K -->|No| M[Skip]
-    L -->|Create| N[Deal-match record]
+  subgraph MATCH["Matching Engine"]
+    MATCHER[Deal Matcher]
+    SCORE{Score >= 50?}
   end
 
   %% =========================
-  %% Notification
+  %% Notification Service
   %% =========================
-  subgraph NO["Notification"]
-    N -->|Get user email| O[Email sender\nSMTP]
-    O -->|HTML + text| P[User inbox]
-    P -->|Example:\nNYC -> Paris USD 449\nGreat deal! 46% below average| A
+  subgraph NOTIFY["Notification Service"]
+    SMTP[Email Sender\nSMTP]
   end
 
   %% =========================
-  %% External Services
+  %% External Sources
   %% =========================
-  subgraph EX["External Services"]
-    Q[Scotts Cheap Flights\nSecret Flying\nThe Flight Deal] -->|Promotional emails| G
+  subgraph EXT["External Sources"]
+    SRC[Flight Deal Providers\nScotts Cheap Flights\nSecret Flying\nThe Flight Deal]
   end
 
-  %% Styles
-  style D fill:#667eea,color:#fff
-  style J fill:#10b981,color:#fff
-  style L fill:#f59e0b,color:#fff
-  style B fill:#3b82f6,color:#fff
-  style O fill:#ec4899,color:#fff
+  %% =========================
+  %% Flow
+  %% =========================
+  U -->|Search preferences\nParis under USD 500| FE
+  FE --> API
+  API --> DB
+
+  SCHED --> IMAP
+  IMAP -->|Fetch emails| SRC
+  IMAP --> PARSER
+  PARSER -->|Extract deal data| DB
+
+  DB --> MATCHER
+  MATCHER --> SCORE
+  SCORE -->|Yes| SMTP
+  SCORE -->|No| DROP[Discard]
+
+  SMTP -->|Personalized deal alert| U
+
+  %% =========================
+  %% Styling
+  %% =========================
+  style FE fill:#3b82f6,color:#fff
+  style DB fill:#667eea,color:#fff
+  style MATCHER fill:#10b981,color:#fff
+  style SMTP fill:#ec4899,color:#fff
 ```
 
 **Workflow Steps:**
