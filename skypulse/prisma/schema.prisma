@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String?        @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id              String   @id @default(cuid())
+  userId          String?
+  // User's natural language input
+  prompt          String
+  
+  // Parsed fields (structured data from LLM)
+  origin          String?
+  destination     String?
+  maxPrice        Int?
+  startDate       String?  // Can be a specific date or "April"
+  endDate         String?
+  
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  
+  user            User?    @relation(fields: [userId], references: [id])
+  matchedDeals    Deal[]
+}
+
+model Deal {
+  id             String        @id @default(cuid())
+  subscriptionId String
+  
+  // Flight Details
+  airline        String
+  flightNumber   String?
+  departureCity  String
+  arrivalCity    String
+  departureDate  DateTime
+  returnDate     DateTime?
+  price          Int
+  bookingLink    String
+  
+  // LLM Generated Content
+  reasonToBuy    String        // "Why is this a good deal?"
+  
+  foundAt        DateTime      @default(now())
+  
+  subscription   Subscription  @relation(fields: [subscriptionId], references: [id])
+}
