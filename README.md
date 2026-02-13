@@ -42,8 +42,7 @@ SkyPulse consists of two main components:
   - Deal matching engine
   - LLM-powered deal analysis
   - Notification delivery system
-
----
+- **Monitoring**: Health checks, metrics, and retry mechanisms
 
 
 **Workflow Steps:**
@@ -60,7 +59,60 @@ SkyPulse consists of two main components:
 
 ---
 
-## �🚀 Getting Started
+## 🛡️ Monitoring & Reliability (Phase 2)
+
+SkyPulse includes comprehensive monitoring for production reliability:
+
+### Health Checks
+```python
+from monitoring import health_check
+
+# Get service health status
+status = health_check()
+# Returns: {"status": "healthy", "services": {...}, "statistics": {...}}
+```
+
+### Available Health Checks
+- **System** - CPU, memory, disk usage
+- **Database** - PostgreSQL/SQLite connectivity
+- **Memory** - Process memory consumption
+- **U runtime statistics
+- **Email** - IMptime** - ServiceAP/SMTP connection status
+
+### Metrics Collection
+```python
+from monitoring import get_metrics
+
+# Get Prometheus-compatible metrics
+metrics = get_metrics()
+# Returns: counters, gauges, histograms for:
+# - emails_processed
+# - deals_found
+# - notifications_sent
+# - api_latency_seconds
+```
+
+### Retry Mechanisms
+```python
+from monitoring import with_retry, RetryConfig
+
+@with_retry(RetryConfig(max_retries=3, initial_delay=1.0))
+def fetch_emails():
+    # Automatic retry with exponential backoff
+    ...
+```
+
+### Health Check Endpoints
+```
+GET /health           # Full health check
+GET /health/live     # Liveness probe
+GET /health/ready    # Readiness probe
+GET /metrics         # Prometheus metrics
+```
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
@@ -116,7 +168,7 @@ pip install -r requirements.txt
 cp .env.example .env
 # Edit .env with your configuration
 
-# Run the service
+# Run the service with monitoring
 python main.py
 ```
 
@@ -159,25 +211,31 @@ April travel plans.
 ## 📂 Project Structure
 
 ```
-cheap-flight/
+skypulse/
 ├── skypulse/                    # Next.js Frontend Application
-│   ├── app/                     # Next.js App Router pages & API routes
-│   ├── components/              # Reusable UI components
-│   ├── lib/                     # Shared utilities (DB client, LLM wrapper)
-│   ├── prisma/                  # Database schema and migrations
-│   ├── public/                  # Static assets
+│   ├── app/                   # Next.js App Router pages & API routes
+│   ├── components/             # Reusable UI components
+│   ├── lib/                   # Shared utilities (DB client, LLM wrapper)
+│   ├── prisma/               # Database schema and migrations
+│   ├── public/                # Static assets
 │   └── package.json
 │
-├── skypulse-email/              # Python Email Service
-│   ├── email_service/           # Email processing modules
-│   ├── llm/                     # LLM integration for deal analysis
-│   ├── matching/                # Deal matching algorithms
-│   ├── models/                  # Data models
-│   ├── parsers/                 # Email parsing utilities
-│   ├── config.py                # Configuration management
+├── skypulse-email/             # Python Email Service
+│   ├── monitoring/            # ✅ NEW: Health checks, metrics, retry
+│   │   ├── __init__.py
+│   │   ├── health.py          # Health check service
+│   │   ├── metrics.py         # Prometheus metrics
+│   │   └── retry.py          # Retry mechanisms
+│   │
+│   ├── email_service/         # Email processing modules
+│   ├── llm/                  # LLM integration for deal analysis
+│   ├── matching/             # Deal matching algorithms
+│   ├── models/                # Data models
+│   ├── parsers/              # Email parsing utilities
+│   ├── config.py             # Configuration management
 │   └── requirements.txt
 │
-└── README.md                    # This file
+└── README.md                  # This file
 ```
 
 ---
@@ -197,6 +255,8 @@ cheap-flight/
 - **Email Processing**: Custom parsers
 - **AI/LLM**: OpenAI integration
 - **Data Models**: Pydantic
+- **Monitoring**: Health checks, Prometheus metrics
+- **Retry**: Exponential backoff with jitter
 
 ---
 
@@ -229,6 +289,12 @@ Clean, premium interface featuring:
 - Deal history and analytics
 - Responsive design for all devices
 
+### 🛡️ Production Reliability
+- **Health Checks** - System, database, memory, uptime, email
+- **Metrics** - Prometheus-compatible, detailed statistics
+- **Retry Logic** - Exponential backoff, jitter, configurable
+- **Structured Logging** - Easy debugging and monitoring
+
 ---
 
 ## 🔧 Configuration
@@ -250,6 +316,7 @@ See `skypulse-email/.env.example` for detailed configuration options including:
 - LLM API keys
 - Matching algorithm parameters
 - Notification settings
+- Retry configuration
 
 ---
 
@@ -265,12 +332,19 @@ npm run start        # Start production server
 npm run lint         # Run ESLint
 ```
 
-### Database Management
+### Email Service Development
 
 ```bash
-npx prisma studio              # Open Prisma Studio (DB GUI)
-npx prisma migrate dev         # Create and apply migrations
-npx prisma generate            # Generate Prisma Client
+cd skypulse-email
+
+# Run with monitoring
+python main.py
+
+# Run tests
+pytest tests/
+
+# Check health
+python -c "from monitoring import health_check; print(health_check())"
 ```
 
 ---
@@ -287,12 +361,14 @@ npx prisma generate            # Generate Prisma Client
 - [x] Database integration (SQLite + Prisma + SQLAlchemy)
 - [x] Scheduled email processing (APScheduler)
 
-### 🚧 Phase 2: Enhancement & Testing (In Progress)
+### 🚧 Phase 2: Enhancement & Monitoring (In Progress)
+- [x] Health check system
+- [x] Prometheus metrics collection
+- [x] Retry mechanisms with exponential backoff
 - [ ] End-to-end integration testing
 - [ ] LLM provider configuration (Ollama/OpenAI/Groq)
 - [ ] Production email credentials setup
 - [ ] Performance optimization
-- [ ] Error handling and retry logic
 
 ### 🔮 Phase 3: Advanced Features (Planned)
 - [ ] Multi-channel notifications (WhatsApp, Telegram)
@@ -332,5 +408,4 @@ For questions or feedback about this project, please reach out via:
 
 *Built with ❤️ using Next.js, TypeScript, Python, and AI*
 
-*Last updated: February 9, 2026 - Phase 1 Complete*
-
+*Last updated: February 13, 2026 - Phase 2 Monitoring Complete*
