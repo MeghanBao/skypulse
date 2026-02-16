@@ -1,66 +1,69 @@
-# SkyPulse - Intelligent Flight Deal System
+# SkyPulse Web App (Phase 2)
 
-**SkyPulse** is your personal, AI-powered flight deal assistant. Instead of endless searching, simply tell SkyPulse what you're looking for (e.g., "Weekend trip to Paris under $500 next month"), and it will monitor deals, analyze them for value, and notify you with a personalized summary.
+SkyPulse is an AI-powered flight-deal dashboard built with Next.js + Prisma.
 
-## ✨ Features
+## What is implemented in Phase 2
 
-- **Natural Language Subscriptions**: No more complex forms. Just type your travel plans naturally.
-- **Intelligent Recommendations**: Uses LLMs (OpenAI) to analyze flight data and explain *why* a deal is good for you.
-- **Deal Dashboard**: A clean, premium interface to view your active subscriptions and recommended flights.
-- **Multi-Channel Push**: (Planned) Get notified via Email, WhatsApp, or Telegram.
+- User registration, sign-in, sign-out, and session cookie auth
+- Email verification flow (token-based)
+- User-scoped subscriptions (create, pause/activate, delete)
+- User preference settings (default origin, max budget, notification email)
+- Dashboard analytics (deal count, average price, active subscriptions, destination trends)
+- Deal cards and email preview section
 
-## 🚀 Getting Started
+## Tech Stack
 
-### Prerequisites
+- Next.js (App Router)
+- TypeScript
+- Prisma + SQLite
+- Tailwind CSS
+- OpenAI API (for parsing and summary generation)
+
+## Prerequisites
 
 - Node.js 18+
-- An OpenAI API Key
+- npm
+- OpenAI API key (optional for local mock behavior)
 
-### Installation
+## Setup
 
-1.  **Clone the repository** (or navigate to the directory):
-    ```bash
-    cd skypulse
-    ```
+```bash
+cd skypulse
+npm install
+```
 
-2.  **Install dependencies**:
-    ```bash
-    npm install
-    ```
+Create `.env` in `skypulse/`:
 
-3.  **Environment Setup**:
-    Create a `.env` file in the root directory:
-    ```env
-    DATABASE_URL="file:./dev.db"
-    OPENAI_API_KEY="sk-..."
-    ```
+```env
+DATABASE_URL="file:./prisma/dev.db"
+OPENAI_API_KEY="sk-..."
+```
 
-4.  **Database Setup**:
-    Initialize the SQLite database:
-    ```bash
-    npx prisma migrate dev --name init
-    ```
+Initialize database schema:
 
-5.  **Run the application**:
-    ```bash
-    npm run dev
-    ```
-    Open [http://localhost:3000](http://localhost:3000) with your browser.
+```bash
+DATABASE_URL='file:./prisma/dev.db' npx prisma db push
+```
 
-## 🛠 Tech Stack
+## Run
 
-- **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
-- **Language**: TypeScript
-- **Database**: SQLite with [Prisma](https://www.prisma.io/)
-- **AI/LLM**: OpenAI API
+```bash
+npm run dev
+```
 
-## 📂 Project Structure
+Open http://localhost:3000
 
-- `/app`: Frontend pages and API routes (Next.js App Router).
-- `/lib`: Shared utilities (Database client, LLM wrapper).
-- `/prisma`: Database schema and migrations.
-- `/components`: Reusable UI components.
+## Quality checks
 
-## 🤝 Contributing
+```bash
+npm run lint
+DATABASE_URL='file:./prisma/dev.db' npm run build
+```
 
-This is a personal project. Feel free to fork and customize!
+## Key folders
+
+- `app/` - pages and server actions
+- `components/` - UI components
+- `lib/` - prisma client, auth helper, LLM integrations
+- `prisma/` - schema and local sqlite db
+- `public/` - static assets
