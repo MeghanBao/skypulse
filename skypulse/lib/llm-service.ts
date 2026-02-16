@@ -45,7 +45,18 @@ export async function parseSubscription(prompt: string): Promise<ParsedSubscript
     }
 }
 
-export async function generateDealSummary(flight: any, userPrompt: string): Promise<string> {
+export interface FlightDealInput {
+    airline: string
+    flightNumber?: string | null
+    departureCity: string
+    arrivalCity: string
+    departureDate: string
+    returnDate: string
+    price: number
+    bookingLink: string
+}
+
+export async function generateDealSummary(flight: FlightDealInput, userPrompt: string): Promise<string> {
     if (!process.env.OPENAI_API_KEY) {
         return "🔥 Excellent deal found based on your preferences! (Mock AI Summary)";
     }
@@ -65,7 +76,7 @@ export async function generateDealSummary(flight: any, userPrompt: string): Prom
             ]
         });
         return completion.choices[0].message.content || "Great deal found!";
-    } catch (e) {
+    } catch {
         return "Great deal found!";
     }
 }

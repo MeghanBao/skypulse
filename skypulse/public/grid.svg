@@ -1,0 +1,12 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M0 0H120V120H0V0Z" fill="transparent"/>
+  <path d="M0 0H120" stroke="#334155" stroke-opacity="0.5"/>
+  <path d="M0 24H120" stroke="#334155" stroke-opacity="0.5"/>
+  <path d="M0 48H120" stroke="#334155" stroke-opacity="0.5"/>
+  <path d="M0 72H120" stroke="#334155" stroke-opacity="0.5"/>
+  <path d="M0 96H120" stroke="#334155" stroke-opacity="0.5"/>
+  <path d="M24 0V120" stroke="#334155" stroke-opacity="0.5"/>
+  <path d="M48 0V120" stroke="#334155" stroke-opacity="0.5"/>
+  <path d="M72 0V120" stroke="#334155" stroke-opacity="0.5"/>
+  <path d="M96 0V120" stroke="#334155" stroke-opacity="0.5"/>
+</svg>

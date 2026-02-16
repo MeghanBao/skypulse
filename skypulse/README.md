@@ -1,66 +1,172 @@
-# SkyPulse - Intelligent Flight Deal System
+# SkyPulse Web App (Phase 2)
 
-**SkyPulse** is your personal, AI-powered flight deal assistant. Instead of endless searching, simply tell SkyPulse what you're looking for (e.g., "Weekend trip to Paris under $500 next month"), and it will monitor deals, analyze them for value, and notify you with a personalized summary.
+`skypulse/` is the Phase 2 web application for SkyPulse, built with **Next.js App Router + Prisma + SQLite + Tailwind CSS**.
 
-## ✨ Features
+This README covers:
+- what is implemented today,
+- how to run locally,
+- the data model and key flows,
+- and minimum verification commands.
 
-- **Natural Language Subscriptions**: No more complex forms. Just type your travel plans naturally.
-- **Intelligent Recommendations**: Uses LLMs (OpenAI) to analyze flight data and explain *why* a deal is good for you.
-- **Deal Dashboard**: A clean, premium interface to view your active subscriptions and recommended flights.
-- **Multi-Channel Push**: (Planned) Get notified via Email, WhatsApp, or Telegram.
+---
 
-## 🚀 Getting Started
+## 1) Implemented features
 
-### Prerequisites
+### Authentication and session
 
-- Node.js 18+
-- An OpenAI API Key
+- User registration (email + password)
+- Sign in / sign out
+- Cookie-based session persistence
+- Password hashing and verification (`pbkdf2`)
+- Email verification token flow (create token, submit token, update verification state)
 
-### Installation
+### User-scoped subscription management
 
-1.  **Clone the repository** (or navigate to the directory):
-    ```bash
-    cd skypulse
-    ```
+- Create subscriptions from natural-language prompts
+- Default-value fallback from user preferences (origin / max price)
+- Toggle subscription active state (`isActive`)
+- Delete subscriptions
+- Ownership checks for subscription actions using current logged-in user
 
-2.  **Install dependencies**:
-    ```bash
-    npm install
-    ```
+### User preferences
 
-3.  **Environment Setup**:
-    Create a `.env` file in the root directory:
-    ```env
-    DATABASE_URL="file:./dev.db"
-    OPENAI_API_KEY="sk-..."
-    ```
+- `preferredOrigin`
+- `preferredMaxPrice`
+- `notificationEmail`
 
-4.  **Database Setup**:
-    Initialize the SQLite database:
-    ```bash
-    npx prisma migrate dev --name init
-    ```
+### Dashboard and analytics
 
-5.  **Run the application**:
-    ```bash
-    npm run dev
-    ```
-    Open [http://localhost:3000](http://localhost:3000) with your browser.
+- KPI cards: average price, deal count, active subscriptions
+- Popular destination stats (grouped by arrival city)
+- Subscription management list
+- Deal card stream and email preview section
 
-## 🛠 Tech Stack
+---
 
-- **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
-- **Language**: TypeScript
-- **Database**: SQLite with [Prisma](https://www.prisma.io/)
-- **AI/LLM**: OpenAI API
+## 2) Tech stack
 
-## 📂 Project Structure
+- Next.js 16 (App Router)
+- React 19
+- TypeScript
+- Prisma 5 + SQLite
+- Tailwind CSS
+- OpenAI SDK (for prompt parsing and summary generation)
 
-- `/app`: Frontend pages and API routes (Next.js App Router).
-- `/lib`: Shared utilities (Database client, LLM wrapper).
-- `/prisma`: Database schema and migrations.
-- `/components`: Reusable UI components.
+---
 
-## 🤝 Contributing
+## 3) Directory overview
 
-This is a personal project. Feel free to fork and customize!
+```text
+skypulse/
+├── app/                # routes and Server Actions
+├── components/         # UI components (subscription form, deal card, etc.)
+├── lib/                # auth, prisma client, LLM service, flight service
+├── prisma/             # schema and local sqlite files
+├── public/             # static assets (including grid background)
+└── README.md
+```
+
+---
+
+## 4) Local setup
+
+### 4.1 Install dependencies
+
+```bash
+cd skypulse
+npm install
+```
+
+### 4.2 Configure environment variables
+
+Create `skypulse/.env`:
+
+```env
+DATABASE_URL="file:./prisma/dev.db"
+OPENAI_API_KEY="sk-..."
+```
+
+> `OPENAI_API_KEY` is recommended. Without it, LLM-related behavior may run in fallback/default mode for local debugging.
+
+### 4.3 Initialize database schema
+
+```bash
+DATABASE_URL='file:./prisma/dev.db' npx prisma db push
+```
+
+### 4.4 Start development server
+
+```bash
+npm run dev
+```
+
+Open: <http://localhost:3000>
+
+---
+
+## 5) Quality checks and build
+
+```bash
+npm run lint
+DATABASE_URL='file:./prisma/dev.db' npm run build
+```
+
+Optional (regenerate Prisma client):
+
+```bash
+npx prisma generate
+```
+
+---
+
+## 6) Data model summary (Prisma)
+
+Core models:
+
+- `User`
+  - email, password hash, verification state
+  - preference fields: `preferredOrigin`, `preferredMaxPrice`, `notificationEmail`
+- `VerificationToken`
+  - linked to user, includes token and expiration
+- `Subscription`
+  - owned by `userId`
+  - stores prompt + structured filters
+- `Deal`
+  - linked to subscription
+  - stores price, airline, dates, booking link, and summary reason
+
+Relationship highlights:
+
+- `User -> Subscription` cascade delete
+- `User -> VerificationToken` cascade delete
+- `Subscription -> Deal` cascade delete
+
+---
+
+## 7) Core flow (high level)
+
+1. User registration creates a `User` and a `VerificationToken`.
+2. Successful sign-in sets session cookie.
+3. Subscription creation flow:
+   - parse user prompt,
+   - create subscription,
+   - query deals and generate summaries,
+   - persist deals.
+4. Dashboard load aggregates subscriptions and deals for current user and computes metrics.
+
+---
+
+## 8) FAQ
+
+### Q1: Database error on startup?
+Run:
+
+```bash
+DATABASE_URL='file:./prisma/dev.db' npx prisma db push
+```
+
+### Q2: Can I run without `OPENAI_API_KEY`?
+Yes. The app runs, but LLM-related output quality and behavior may be degraded.
+
+### Q3: Why is dashboard empty?
+Dashboard data is user-scoped. Register/sign in first, then create a subscription under that account.
