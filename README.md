@@ -45,53 +45,6 @@ SkyPulse consists of two main components:
 
 ---
 
-## � System Workflow
-
-```mermaid
-graph TB
-    subgraph "User Interface"
-        A[User] -->|Natural Language<br/>"Paris under $500"| B[Frontend<br/>Next.js]
-    end
-    
-    subgraph "Frontend Processing"
-        B -->|Parse with OpenAI| C[Subscription Created]
-        C -->|Store| D[(SQLite Database)]
-    end
-    
-    subgraph "Email Service - Scheduled Every 30min"
-        E[APScheduler] -->|Trigger| F[Email Reader<br/>IMAP]
-        F -->|Fetch| G[Flight Deal<br/>Emails]
-        G -->|Parse HTML| H[Deal Parser<br/>LLM + BeautifulSoup]
-        H -->|Extract| I[Deal Data]
-        I -->|Save| D
-    end
-    
-    subgraph "Matching Engine"
-        D -->|Active Subscriptions| J[Deal Matcher]
-        I -->|New Deal| J
-        J -->|Calculate Score<br/>Destination: 40pts<br/>Price: 30pts<br/>Date: 20pts<br/>Origin: 10pts| K{Score ≥ 50?}
-        K -->|Yes| L[Generate AI Summary]
-        K -->|No| M[Skip]
-        L -->|Create| N[Deal Match Record]
-    end
-    
-    subgraph "Notification"
-        N -->|Get User Email| O[Email Sender<br/>SMTP]
-        O -->|HTML + Text| P[User Inbox]
-        P -->|"✈️ NYC → Paris $449<br/>🤖 Great deal! 46% below average"| A
-    end
-    
-    subgraph "External Services"
-        Q[Scott's Cheap Flights<br/>Secret Flying<br/>The Flight Deal] -->|Promotional Emails| G
-    end
-    
-    style D fill:#667eea,color:#fff
-    style J fill:#10b981,color:#fff
-    style L fill:#f59e0b,color:#fff
-    style B fill:#3b82f6,color:#fff
-    style O fill:#ec4899,color:#fff
-```
-
 **Workflow Steps:**
 
 1. **User Creates Subscription** - User enters travel preferences in natural language via web interface
