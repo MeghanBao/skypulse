@@ -1,5 +1,3 @@
-import clsx from 'clsx'
-
 interface DealProps {
     deal: {
         airline: string
