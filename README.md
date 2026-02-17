@@ -327,7 +327,7 @@ This is a personal project, but contributions are welcome! Feel free to:
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License. https://github.com/MeghanBao/skypulse/blob/main/LICENSE
 
 ---
 
